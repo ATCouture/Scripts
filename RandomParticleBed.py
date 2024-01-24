@@ -1,41 +1,60 @@
 import random as rd
 import numpy as np
 import fortranformat as ff
-#fout = 'points.dat'
-#writer = ff.FortranRecordWriter('(A16, 4E23.16)')
-#writer_head = ff.FortranRecordWriter('(I16)')
+import math
+fout = 'points.dat'
+writer = ff.FortranRecordWriter('(A16, 4E23.16)')
+writer_head = ff.FortranRecordWriter('(I16)')
 
-# print('Enter desired particle volume fraction: ')
-particles_vol_fract = 0.0001 # float(input())
-print(particles_vol_fract)
+print('Enter desired particle volume fraction: ')
+particles_vol_fract = float(input())
+print('Particle Volume Fraction = ',particles_vol_fract*100,'%')
 
-# print('Enter particle diameter?')
-particles_dia = 0.000025 # float(input())
-print('Particles diameter: ' + str(particles_dia))
-particles_vol = 3.14/6*particles_dia**3
+print('Enter particle diameter:')
+particles_dia = float(input())
+print('Particles diameter: ',particles_dia)
+particles_vol = math.pi/6*particles_dia**3
 
-# print('Type coordinates (cart=1, cyld=2, sph=3)')
-coord = 1 #int(input())
+print('Enter particle material:')
+part_material = input()
+print('Particle Material: ',part_material)
+
+print('Type coordinates (cart=1, cyld=2, sph=3)')
+coord = int(input())
 
 if coord == 1:
-    print('Cartesian Coordinate Frame')
-    x_min = 0 #float(input())
-    x_max = .001 #float(input())
-    y_min = 0 #float(input())
-    y_max = .001 #float(input())
-    z_min = 0 #float(input())
-    z_max = .001 #float(input())
+    print('Cartesian Coordinate Frame (3-dimensional)')
+    print('Enter minimum x-coordinate boundary:')
+    x_min = float(input()) + particles_dia/2
+    print('Enter maximum x-coordinate boundary:')
+    x_max = float(input()) - particles_dia/2
+    print('Enter minimum y-coordinate boundary:')
+    y_min = float(input()) + particles_dia/2
+    print('Enter maximum y-coordinate boundary:')
+    y_max = float(input()) - particles_dia/2
+    print('Enter minimum z-coordinate boundary:')
+    z_min = float(input()) + particles_dia/2
+    print('Enter maximum z-coordinate boundary:')
+    z_max = float(input()) - particles_dia/2
+
     x_range = x_max - x_min
     y_range = y_max - y_min
     z_range = z_max - z_min
 
-    total_vol = 3.14*0.006**3 #x_range*y_range*z_range
-    x_range = total_vol**(1/3) # for equivalent volume of barrel
-    y_range = total_vol**(1/3) # for equivalent volume of barrel
-    z_range = total_vol**(1/3) # for equivalent volume of barrel
+    total_vol = x_range*y_range*z_range
+    #x_range = total_vol**(1/3) # for equivalent volume of barrel
+    #y_range = total_vol**(1/3) # for equivalent volume of barrel
+    #z_range = total_vol**(1/3) # for equivalent volume of barrel
 
 elif coord == 2:
     print('Cylindrical Coordinate Frame')
+
+    print('Enter minimum radial-coordinate boundary:')
+    rad_min = float(input()) + particles_dia/2
+    print('Enter maximum radial-coordinate boundary:')
+    rad_max = float(input()) - particles_dia/2
+    print('Enter minimum azimuth angle in degrees:')
+    az_min = input()
 
 elif coord == 3:
     print('Spherical Coordinate Frame')
@@ -43,44 +62,34 @@ elif coord == 3:
 else:
     print('Error: incorect coordinate input')
 
-# print('Enter number of particles?')
-particles_num = int(particles_vol_fract*total_vol/particles_vol) # 1000 # int(input()) Change to input later. maybe vol fraciton?
+particles_num = int(particles_vol_fract*total_vol/particles_vol)
 print('Number of particles: '+ str(particles_num))
 
-part_x = np.zeros(particles_num)
-part_y = np.zeros(particles_num)
-part_z = np.zeros(particles_num)
-count1 = 0
+
+part_coord = np.zeros((particles_num,3))
 i = 0
 while i < particles_num:
     # Initial partical location
-    # insert function for random
-    part_x[i] = rd.random()*x_range+x_min
-    part_y[i] = rd.random()*y_range+y_min
-    part_z[i] = rd.random()*z_range+z_min
+    part_coord[i,0] = rd.random()*x_range+x_min
+    part_coord[i,1] = rd.random()*y_range+y_min
+    part_coord[i,2] = rd.random()*z_range+z_min
     overlap = 0
     if i > 0:
-        for j in range(i):
-            delta = ((part_x[i] - part_x[j])**2 + (part_y[i] - part_y[j])**2 + (part_z[i] - part_z[j])**2)**(1/2)
-            if delta <= particles_dia and i != j:
-                overlap = 1
-                count1 = count1 + 1
-                break
-    if overlap == 0:
+        for j in range(i): #loops through all nonzero positioned particles
+            delta = ((part_coord[i,0] - part_coord[j,0])**2 + (part_coord[i,1] - part_coord[j,1])**2 + (part_coord[i,2] - part_coord[j,2])**2)**(1/2)
+            if delta <= particles_dia and i != j: # When true, particle is overlapped with another existing particle
+                overlap = 1 # This skips i = i + 1 and repeats while loop for this particle
+                break # This ensures that code doesn't look for more overlaps after initial overlap is found
+    if overlap == 0: # This means that the new particle is in a unique location
         i = i + 1
     percent_done = i/particles_num*100
-    print(str(percent_done), end='\r')
+    print('Percent of particles placed: ' + str(percent_done), end='\r')
 
-#count2 = 0
+final_string = writer_head.write([particles_num]) + '\n'
 #for k in range(particles_num):
-#    if k != 1:
-#        for l in range(particles_num):
-#            delta = ((part_x[k] - part_x[l])**2 + (part_y[k] - part_y[l])**2 + (part_z[k] - part_z[l])**2)**(1/2)
-#            if delta < particles_dia + particles_dia/1000 and k != l:
-#                count2 = count2 + 1
-#                print('Overlap at: ',k,l)
-
-print('Number of duplicates:',count1)
-print('Number of particles:', particles_num)
-print('Particle volume fraction percent:', particles_vol_fract*100)
-print('Done!')
+#    final_string += writer.write([part_material,part_coord[k,0],part_coord[k,1],part_coord[k,2],particles_dia]) + '\n'
+with open(fout,'w') as f:
+    f.write(writer_head.write([particles_num])+'\n')
+    for k in range(particles_num):
+        f.write(writer.write([part_material,part_coord[k,0],part_coord[k,1],part_coord[k,2],particles_dia]) + '\n')
+print('Done!                                                        ')
