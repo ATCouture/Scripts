@@ -27,7 +27,7 @@ print('Enter particle material:')
 part_material = input()
 print('Particle Material: ',part_material)
 
-print('Type coordinates (cart=1, cyld=2, sph=3)')
+print('Type coordinates (cart=1, cyld=2)') #, sph=3)')
 coord = int(input())
 
 if coord == 1:
@@ -114,8 +114,8 @@ elif coord == 2:
         percent_done = i/particles_num*100
         print('Percent of particles placed: ' + str(percent_done), end='\r')
 
-elif coord == 3:
-    print('Spherical Coordinate Frame')
+#elif coord == 3:
+    #print('Spherical Coordinate Frame')
     # need to define this case
 else:
     print('Error: incorect coordinate input')
