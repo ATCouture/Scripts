@@ -2,13 +2,14 @@ import random as rd
 import numpy as np
 import fortranformat as ff
 import math
+import matplotlib.pyplot as plt
 
 # Version 1.0
 # Code requests parameters from user and outputs a points.dat file describing a randomly distributed
 # particle bed in the following format:
 # Number_of_Particles
 # Particle Material | Particle Center x-coordinate | Particle Center y-coordinate | Particle Center z-coordinate | Particle Diameter
-# Code currently supports 3 Dimensional Cartesian and Cylindrical Coordinate Input and Outputs in Cartesian Coordinates
+# Code currently supports 3 Dimensional Cartesian, Cylindrical, and Spherical Coordinate Input and Outputs in Cartesian Coordinates
 
 fout = 'points.dat'
 writer = ff.FortranRecordWriter('(A16, 4E23.16)')
@@ -80,10 +81,6 @@ elif coord == 2:
     print('Enter maximum radial-coordinate boundary:')
     rad_max = float(input()) - particles_dia/2
     print('Assuing the azimuth is full 360 degrees.')
-        #print('Enter minimum azimuth angle in degrees (from x-axis):')
-        #az_min = float(input())*math.pi/180
-        #print('Enter maximum azimuth angle in degress (from x-axis):')
-        #az_max = float(input())*math.pi/180
     print('Enter minimum z-coordinate boundary:')
     z_min = float(input()) + particles_dia/2
     print('Enter maximum z-coordinate boundary:')
@@ -99,8 +96,9 @@ elif coord == 2:
     i = 0
     while i < particles_num:
         # Initial partical location
-        part_coord[i,0] = (rd.random()*rad_range + rad_min)*math.cos(rd.random()*az_range)
-        part_coord[i,1] = (rd.random()*rad_range + rad_min)*math.sin(rd.random()*az_range)
+        az_angle = az_range*rd.random()
+        part_coord[i,0] = (rd.random()*rad_range + rad_min)*math.cos(az_angle)
+        part_coord[i,1] = (rd.random()*rad_range + rad_min)*math.sin(az_angle)
         part_coord[i,2] = rd.random()*z_range+z_min
         overlap = 0
         if i > 0:
@@ -133,6 +131,8 @@ elif coord == 3:
     i = 0
     while i < particles_num:
         # Initial partical location
+        az_angle = az_range*rd.random()
+        psi_angle = az_range*rd.random()
         part_coord[i,0] = (rd.random()*rad_range + rad_min)*math.cos(rd.random()*az_range)*math.sin(rd.random()*psi_range)
         part_coord[i,1] = (rd.random()*rad_range + rad_min)*math.sin(rd.random()*az_range)*math.sin(rd.random()*psi_range)
         part_coord[i,2] = (rd.random()*rad_range + rad_min)*math.cos(rd.random()*psi_range)
@@ -150,6 +150,12 @@ elif coord == 3:
 else:
     print('Error: incorect coordinate input')
     error == 1
+
+
+size = np.ones(len(part_coord[:,1]))*2
+plt.scatter(part_coord[:,0],part_coord[:,1], s=size)
+plt.show()
+
 
 if error != 1:
     with open(fout,'w') as f:
