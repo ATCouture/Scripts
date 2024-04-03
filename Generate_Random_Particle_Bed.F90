@@ -14,11 +14,12 @@ REAL :: start, finish
 CALL CPU_TIME(start)
 
   pi             = 3.14159265359d0
-  part_vol_fract = 0.35d0 
-  part_dia       = 0.0001d0
+  part_vol_fract = ! Type Particle Volume Fraction here, Ex: 0.10d0 
+  part_dia       = ! Type Particle Diameter here, Ex: 0.0001d0
   part_vol       = pi/6.0d0*part_dia**3
-  part_mat       = 'St'
+  part_mat       = ! Type Particle Material here, Ex:'St'
 
+  ! These values are set for 3D Barrel Problem
   x_min = -0.006d0 + part_dia/2.0d0 
   x_max =  0.006d0 - part_dia/2.0d0
   y_min = -0.006d0 + part_dia/2.0d0
@@ -30,6 +31,7 @@ CALL CPU_TIME(start)
   y_range = y_max - y_min
   z_range = z_max - z_min
 
+  ! Assumes a cylindrical particle bed
   total_vol = pi*((x_max + part_dia/2.0d0)**2)*(z_range + part_dia)
   part_num = INT(part_vol_fract*total_vol/part_vol)  
   
@@ -47,6 +49,7 @@ CALL CPU_TIME(start)
     CALL RANDOM_NUMBER(rand)
     z_pos(i) = rand*z_range+z_min
     overlap = 0
+    ! Particle Bed has radius of 0.006 m (based on x/y_min/max)
     IF (SQRT(x_pos(i)**2+y_pos(i)**2) > (x_max+part_dia/2.0d0)) overlap = 1
     IF (i > 1 .AND. overlap < 1) THEN
       checker: DO j = 1,i
@@ -68,9 +71,8 @@ CALL CPU_TIME(start)
 !L1:       I16 [Number of Particles]
 !L2-Npar: A16 [Part Material] 4F23.16 [x-coord] [y-coord] [z-coord] [Part Dia]
 !-----------------------------------------------------------------------------
-
-  fname    = 'C:\Users\avery\OneDrive\Desktop\35testpoints.dat'
-  part_mat = 'St'
+  
+  fname    = !Inpute desired path and filename, Ex: 'C:\Users\avery\OneDrive\Desktop\35testpoints.dat'
   OPEN(UNIT=11, FILE = fname, STATUS = 'NEW', ACTION = 'WRITE')
   WRITE(11,'(I16)') part_num
   DO i = 2, (part_num+1)
@@ -78,7 +80,7 @@ CALL CPU_TIME(start)
   END DO
 
 CALL CPU_TIME(finish)
-
+! Prints out the execution time in terminal
 WRITE(*,'("Time = ",f25.3," minutes.")') ((finish-start)/60)
 
 END PROGRAM RandomPart
