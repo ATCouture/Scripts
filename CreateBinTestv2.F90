@@ -40,7 +40,7 @@
         DO
           ! Checking with nBin + 1 will make sure all 3 iBin combinations 
           ! in DO loop below will meet filterwidth criteria. 
-          IF ((nBin(l)+1)/lBin(l) > filter) EXIT
+          IF (lBin(l)/(nBin(l)+1) > filter) EXIT
           nBin(l) = nBin(l) - 1 
           IF (nBin(l) < 0) THEN ! < 0 instead of <1 since we added 1 in if statement
             WRITE(*,*) 'Filterwidth criteria is violated. Particle domain is less than filterwidth'
